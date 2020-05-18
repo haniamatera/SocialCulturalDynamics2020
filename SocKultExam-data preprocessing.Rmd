@@ -1,0 +1,671 @@
+---
+title: "Social&Cultural Dynamic- Exam 2020. Data preprocessing 2018"
+author: "Hanna Matera and Orla Mallon"
+date: "5/1/2020"
+output: html_document
+---
+
+
+ 
+# PART 1: 2018 data
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(tidyverse,dplyr)
+
+setwd("~/Desktop/semester 4/soc kult exam /cs-transfer/ZA7570_ISSP_2018/data_spss")
+getwd()
+
+#downloading raw data from ISSP website and saving as a dataframe(2018) 
+library(foreign)
+write.table(read.spss("ZA7570_v1-0-0.sav"), file="data2018.csv", quote = FALSE, sep = ",")
+data2018 <- read.spss("ZA7570_v1-0-0.sav", quote = FALSE, sep = ",")
+
+data2018 <- as.data.frame(data2018)
+levels(data2018$country)
+
+#countries present across all data sets ('91,'98,'08,'18) are: Austria, Denmark, France ,Hungary, Norway, Slovenia, Sweden, Czech Rep,. Germany, Spain, Switzerland, UK 
+
+#in our study we want to focus on just 13 questions present in the original study and selected countries: 
+data2018_fil <- data2018 %>% select(country,AGE,SEX,DEGREE,ATTEND,v20,v21,v22,v23,v24,v25,v40,v41,v42,v43,v44,v48)%>%filter(country%in%c("SE-Sweden","FR-France","HU-Hungary","NO-Norway","ES-Spain","GB-Great Britain and/or United Kingdom"))
+
+
+#adding ID col 
+data2018_fil$ID <- seq.int(nrow(data2018_fil))
+
+#inverted questions (where low score indicated high religiosity)
+data2018_inv <- select(data2018_fil,ID,country,AGE,SEX,DEGREE,ATTEND,v22,v23,v24,v25,v48)
+
+#non-inverted (where high score indicated high-religiosity)
+data2018_non_inv <-select(data2018_fil,ID,country,AGE,SEX,DEGREE,ATTEND,v20,v21,v40,v41,v42,v43,v44)
+
+
+
+```
+
+```{r}
+#lists of possible answers and relevant weightings 
+
+
+one <-c("I don't believe in God","I don't believe in God now and I never have","Several times a week","Once a day, KR: not used","No, definitely not","Never","Extremely non-religious") 
+
+two <- c("Don't know whether there is a God and no way to find out","I don't believe in God now, but I used to","No, probably not", "Less than once a year","Very non-religious")
+
+three <- c("Don't believe in a personal God, but in a Higher Power","I believe in God now, but I didn't use to", "Yes, probably","About once or twice a year; KR: About once a year","Somewhat non-religious")
+
+four <- c("Find myself believing in God sometimes, but not at others","Nearly every week","I believe in God now and I always have", "Yes, definitely","Several times a year","Neither religious nor non-religious")
+
+
+five <- c("While I have doubts, I feel that I do believe in God","About once a month","Somewhat religious")
+
+six <- c("2-3 times a month","I know God really exists and have no doubts about it","Very religious")
+
+seven <- c("Nearly every week", "Extremely religious")
+
+eight <- ("Every week")
+
+nine <- ("Several times a week")
+
+#these will just be replaced with Nas 
+#NAs <- c("Can't choose","Can't say/ Can't remember","Can't choose","Refused","No answer","Don't know","No mother/ mother not present" ,"No father/ father not present")
+
+
+
+#changing answers to scores - inverted 
+
+
+data2018_inv <- data2018_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v22:v48) %>%
+  mutate(
+    Q3 = case_when(
+      v22 %in% one ~ "1",
+      v22 %in% two ~ "2",
+      v22 %in% three~ "3",
+      v22%in% four ~ "4",
+      v22 %in% five ~ "5",
+      v22 %in% six~ "6",
+      v22 %in% seven ~ "7",
+      v22 %in% eight ~"8",
+      v22 %in% nine~"9"
+    )
+  )
+
+#Q2
+data2018_inv <- data2018_inv %>%
+select(ID,country,AGE,SEX,DEGREE,ATTEND,v22:v48,Q3) %>%
+  mutate(
+    Q4 = case_when(
+      v23 %in% one ~ "1",
+      v23 %in% two ~ "2",
+      v23 %in% three~ "3",
+      v23 %in% four ~ "4",
+      v23 %in% five ~ "5",
+      v23 %in% six~ "6",
+      v23 %in% seven ~ "7",
+      v23 %in% eight ~"8",
+      v23 %in% nine~"9"
+    )
+  )
+
+
+
+data2018_inv <- data2018_inv %>%
+select(ID,country,AGE,SEX,DEGREE,ATTEND,v22:v48,Q3:Q4) %>%
+  mutate(
+    Q5 = case_when(
+      v24 %in% one ~ "1",
+      v24 %in% two ~ "2",
+      v24 %in% three~ "3",
+      v24 %in% four ~ "4",
+      v24 %in% five ~ "5",
+      v24 %in% six~ "6",
+      v24 %in% seven ~ "7",
+      v24 %in% eight ~"8",
+      v24 %in% nine~"9"
+    )
+  )
+
+
+data2018_inv <- data2018_inv %>%
+select(ID,country,AGE,SEX,DEGREE,ATTEND,v22:v48,Q3:Q5) %>%
+  mutate(
+    Q6 = case_when(
+      v25 %in% one ~ "1",
+      v25 %in% two ~ "2",
+      v25 %in% three~ "3",
+      v25 %in% four ~ "4",
+      v25 %in% five ~ "5",
+      v25 %in% six~ "6",
+      v25 %in% seven ~ "7",
+      v25 %in% eight ~"8",
+      v25 %in% nine~"9"
+    )
+  )
+
+data2018_inv <- data2018_inv %>%
+select(ID,country,AGE,SEX,DEGREE,ATTEND,v22:v48,Q3:Q6) %>%
+  mutate(
+    Q12 = case_when(
+      v48 %in% one ~ "1",
+      v48 %in% two ~ "2",
+      v48 %in% three~ "3",
+      v48 %in% four ~ "4",
+      v48 %in% five ~ "5",
+      v48 %in% six~ "6",
+      v48 %in% seven ~ "7",
+      v48 %in% eight ~"8",
+      v48 %in% nine~"9"
+    )
+  )
+
+
+
+```
+
+
+
+```{r}
+#non-inverted 
+
+data2018_non_inv <- data2018_non_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v20:v44) %>%
+  mutate(
+    Q1 = case_when(
+      v20 %in% one ~ "1",
+      v20 %in% two ~ "2",
+      v20 %in% three~ "3",
+      v20%in% four ~ "4",
+      v20 %in% five ~ "5",
+      v20%in% six~ "6",
+      v20%in% seven ~ "7",
+      v20%in% eight ~"8",
+      v20%in% nine~"9"
+    )
+  )
+
+
+
+
+data2018_non_inv <- data2018_non_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v20:v44,Q1) %>%
+  mutate(
+    Q2 = case_when(
+      v21%in% one ~ "1",
+      v21 %in% two ~ "2",
+      v21 %in% three~ "3",
+      v21%in% four ~ "4",
+      v21 %in% five ~ "5",
+      v21%in% six~ "6",
+      v21%in% seven ~ "7",
+      v21%in% eight ~"8",
+      v21%in% nine~"9"
+    )
+  )
+
+data2018_non_inv <- data2018_non_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v20:v44,Q1:Q2) %>%
+  mutate(
+    Q7 = case_when(
+      v40%in% one ~ "1",
+      v40 %in% two ~ "2",
+      v40 %in% three~ "3",
+      v40%in% four ~ "4",
+      v40 %in% five ~ "5",
+      v40%in% six~ "6",
+      v40%in% seven ~ "7",
+      v40%in% eight ~"8",
+      v40%in% nine~"9"
+    )
+  )
+
+
+data2018_non_inv <- data2018_non_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v20:v44,Q1:Q2,Q7) %>%
+  mutate(
+    Q8 = case_when(
+      v41%in% one ~ "1",
+      v41 %in% two ~ "2",
+      v41 %in% three~ "3",
+      v41%in% four ~ "4",
+      v41 %in% five ~ "5",
+      v41%in% six~ "6",
+      v41%in% seven ~ "7",
+      v41%in% eight ~"8",
+      v41%in% nine~"9"
+    )
+  )
+
+data2018_non_inv <- data2018_non_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v20:v44,Q1:Q2,Q7:Q8) %>%
+  mutate(
+    Q9 = case_when(
+      v42%in% one ~ "1",
+      v42 %in% two ~ "2",
+      v42 %in% three~ "3",
+      v42%in% four ~ "4",
+      v42 %in% five ~ "5",
+      v42%in% six~ "6",
+      v42%in% seven ~ "7",
+      v42%in% eight ~"8",
+      v42%in% nine~"9"
+    )
+  )
+
+
+data2018_non_inv <- data2018_non_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v20:v44,Q1:Q2,Q7:Q9) %>%
+  mutate(
+    Q10 = case_when(
+      v43=="Never" ~ "1",
+      v43=="Less than once a year" ~ "2",
+      v43=="About once or twice a year; KR: About once a year"~ "3",
+      v43=="Several times a year" ~ "4",
+      v43=="About once a month" ~ "5",
+      v43=="2-3 times a month"~"6",
+      v43=="Nearly every week" ~ "7",
+      v43=="Every week" ~ "8",
+      v43=="Several times a week" ~"9",
+      v43=="Once a day; KR: not used"~"10",
+      v43=="Several times a day; KR: not used"~"11"
+    )
+  )
+
+
+data2018_non_inv <- data2018_non_inv %>%
+  select(ID,country,AGE,SEX,DEGREE,ATTEND,v20:v44,Q1:Q2,Q7:Q10) %>%
+  mutate(
+    Q11 = case_when(
+      v44%in% one ~ "1",
+      v44 %in% two ~ "2",
+      v44 %in% three~ "3",
+      v44%in% four ~ "4",
+      v44 %in% five ~ "5",
+      v44%in% six~ "6",
+      v44%in% seven ~ "7",
+      v44%in% eight ~"8",
+      v44%in% nine~"9"
+    )
+  )
+
+
+
+
+```
+
+```{r}
+#merging two data frames (inverted and non-inverted)
+
+data_A <- select(data2018_inv,ID,Q3:Q12)
+data_B <- select(data2018_non_inv,ID,Q1:Q11,country,AGE,SEX,DEGREE,ATTEND)
+
+#merging by ID
+final_data <- merge(data_A,data_B,by="ID")  
+
+# changing ATTEND into numbers 
+final_data <- final_data %>%
+  select(ID,Q3:Q11,country,AGE,SEX,DEGREE,ATTEND) %>%
+  mutate(
+    ATTEND_s = case_when(
+      ATTEND=="Never"~ "1",
+      ATTEND== "Less frequently than once a year" ~ "2",
+      ATTEND== "Once a year"~ "3",
+      ATTEND== "Several times a year" ~ "4",
+      ATTEND=="Once a month" ~ "5",
+      ATTEND=="2 or 3 times a month"~ "6",
+      ATTEND=="Once a week"~ "7",
+      ATTEND=="Several times a week or more often (incl. every day, several times a day)"~"8"
+    )
+  )
+
+#mice package and substituting missing values 
+
+#Calculate the percentage of missing values per variable
+p <- function(x) {sum(is.na(x))/ length(x) *100}
+apply(data_2018, 2, p)
+
+#Imputing data using mice 
+impute <- mice(data_2018[, c(2:14, 20)], m= 5, seed = 100)
+print(impute)
+impute$imp$Q2
+
+pacman::p_load(dplyr)
+#add the imputed values into your dataset using the complete function - choose which m you want to use
+complete(impute, 3)
+new_2018 <-complete(impute, 3)
+
+#Add columns 
+dataA <- select(data_2018, ID, country, AGE, SEX, DEGREE, religion)
+
+#Combine data 
+fina_data <- merge(dataA, new_2018, by = "ID")
+
+
+
+#filtering out relevant countries from data frame
+final_data <- final_data %>% select(X:ATTEND_s)%>%filter(country%in%c("SE-Sweden","FR-France","HU-Hungary","NO-Norway","ES-Spain","GB-Great Britain and/or United Kingdom"))
+
+#changing into numeric
+cols.num <- c("ID","Q3","Q4","Q5","Q6","Q12","Q1","Q2","Q7","Q8","Q9","Q10","Q11","ATTEND_s")
+final_data[cols.num] <- sapply(final_data[cols.num],as.numeric)
+str(final_data)
+
+
+
+#attend column- classyfying as yes/no factor depending o the answer  
+
+final_data <- final_data %>%
+  select(X:ATTEND_s)  %>%
+  mutate(
+   ATTEND_yes_no = case_when(
+      ATTEND_s %in% c("1","2","3","4")~ "NO",
+      ATTEND_s  %in% c("5","6", "7","8") ~ "YES"
+   ))
+
+
+#weighting each question according to their level (levels= ways of answering a given question )
+final_data$Q1=final_data$Q1/6
+final_data$Q2=final_data$Q2/4
+final_data$Q3=final_data$Q3/4
+final_data$Q4=final_data$Q4/4
+final_data$Q5=final_data$Q5/4
+final_data$Q6=final_data$Q6/4
+final_data$Q7=final_data$Q7/8
+final_data$Q8=final_data$Q8/8
+final_data$Q9=final_data$Q9/8
+final_data$Q10=final_data$Q10/11
+final_data$Q11=final_data$Q11/8
+final_data$Q12=final_data$Q12/7
+final_data$ATTEND_s = final_data$ATTEND_s / 8
+
+
+
+#score of religiosity for each person (sum of all weighted questions)  
+
+final_data$score = as.numeric(rowSums(final_data[,c(8:20)],na.rm = T))  
+
+#inspecting statistics 
+mean(final_data$score)
+median(final_data$score)
+sd(final_data$score)
+max(final_data$score)
+hist(final_data$score)
+
+
+#standardizing the score - so that we can feed it to ABM 
+
+final_data<- final_data%>% 
+  mutate(
+    score_stand = (score-min(score))/(max(score)-min(score))
+  )
+
+#inspecting statistics 
+hist(final_data$score_stand)  
+mean(final_data$score_stand) ## 0.3366839
+median(final_data$score_stand) ##  0.2998264
+sd(final_data$score_stand)   ##0.2331681
+max(final_data$score_stand) ##1
+
+write.csv(final_data,file="final_data2018.csv")
+
+```
+
+```{r}
+# plotting 
+
+#mean score by country 
+summary <- final_data %>% group_by(country) %>% summarise(mean(score_stand))
+
+ggplot(summary,aes(summary$country,summary$`mean(score_stand)`, fill=country)) + 
+  geom_bar(stat="summary",fun.y=mean) + 
+  labs(x="country",y="mean score")+
+  ggtitle("mean religiosity level by country")
+
+
+#by religion 
+summary_rel <- final_data %>% group_by(religion) %>% summarise(mean(score_stand))
+
+ggplot(summary_rel,aes(summary_rel$religion,summary_rel$`mean(score_stand)`, fill=religion)) + 
+  geom_bar(stat="summary",fun.y=mean) + 
+  labs(x="country",y="mean score")+
+  ggtitle("mean religiosity level by religion")
+
+
+
+```
+
+```{r}
+
+# factors created from specific questions (Religious Practice, Belief in God, Supernatural Belief and Religious Formation )
+
+factors <- select(final_data,ID:score)
+
+factors$SupernaturalBel = rowSums(final_data[,c(8:11)],na.rm = T)
+factors$BelInGod = rowSums(final_data[,c(12:14)],na.rm = T)
+factors$RelForm = rowSums(final_data[,c(15:17)],na.rm = T)
+factors$RelPract = rowSums(final_data[,c(18:20)],na.rm = T)
+
+
+
+#changing Education Years to education level (on a scale from -2.5 to 2.5 in order to make it fit to the function we specify later on in NetLogo) 
+
+
+factors <- factors %>%
+  select(ID:RelPract) %>%
+  mutate(
+    Education = as.numeric(case_when(
+      DEGREE=="No formal education"  ~ "-2.5",
+      DEGREE=="Primary school (elementary education)"~ "-1.5",
+      DEGREE=="Lower secondary (secondary completed that does not allow entry to university: end of obligatory school)"~ "-0.5",
+      DEGREE%in%c("Upper secondary (programs that allows entry to university)","No answer")  ~ "0.5",
+      DEGREE%in%c("Post secondary, non-tertiary (other upper secondary programs toward the labour market or technical formation)", "Lower level tertiary, first stage (also technical schools at a tertiary level)" )~ "1.5",
+      DEGREE=="Upper level tertiary (Master, Doctor)"~ "2.5"
+    )
+  ))
+
+
+
+
+
+```
+```
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars `echo= F`}
+# splitting up data fram 2018 to individual countries 
+
+#keeping original education (to feed it to ABM)
+factors <- factors %>%
+  select(ID:Education) %>%
+  mutate(
+    Education_org = as.numeric(case_when(
+      Education=="-2.5"  ~ "1",
+      Education=="-1.5"~ "2",
+      Education=="-0.5"~ "3",
+      Education== "0.5"  ~ "4",
+      Education== "1.5"~ "5",
+      Education=="2.5"~ "6"
+    )
+  ))
+
+
+# data frame per country with entries for :
+#gender,
+#score of religiosity (Belief in God, Supernatural Belief, Religious Formation and Relogious Practice),
+#Religious Practice as a separate factor (Questions 10, 11 and Attend)
+#Education - both standardized and original 
+#Binomial classification of church attendance (yes/no):
+
+Spain18_final <- select(factors,SEX,score,Education,Education_org,RelPract,ATTEND_yes_no) %>% filter(factors$country =="ES-Spain") 
+France18_final <- select(factors,SEX,score,Education,Education_org,RelPract,ATTEND_yes_no) %>% filter(factors$country =="FR-France") 
+Hungary18_final <- select(factors,SEX,score,Education,Education_org,RelPract,ATTEND_yes_no) %>% filter(factors$country =="HU-Hungary") 
+UK18_final <- select(factors,SEX,score,Education,Education_org,RelPract,ATTEND_yes_no) %>% filter(factors$country =="GB-Great Britain and/or United Kingdom") 
+Norway18_final <- select(factors,SEX,score,Education,Education_org,RelPract,ATTEND_yes_no) %>% filter(factors$country =="NO-Norway") 
+Sweden18_final <- select(factors,SEX,score,Education,Education_org,RelPract,ATTEND_yes_no) %>% filter(factors$country =="SE-Sweden") 
+
+
+# standardising the score of religiosity and Rel_Pract per country :
+
+#SPAIN
+Spain18_final<- Spain18_final%>% 
+  mutate(
+    RelPract = (RelPract-min(RelPract))/(max(RelPract)-min(RelPract))
+  )
+Spain18_final<- Spain18_final%>% 
+  mutate(
+    score = (score-min(score))/(max(score)-min(score))
+  )
+
+hist(Spain18_final$score)
+hist(Spain18_final$RelPract)
+
+mean(Spain18_final$score)
+
+#FRANCE
+France18_final<- France18_final%>% 
+  mutate(
+    RelPract = (RelPract-min(RelPract))/(max(RelPract)-min(RelPract))
+  )
+France18_final<- France18_final%>% 
+  mutate(
+    score = (score-min(score))/(max(score)-min(score))
+  )
+
+hist(France18_final$score)
+hist(France18_final$RelPract)
+
+#HUNGARY
+Hungary18_final<- Hungary18_final%>% 
+  mutate(
+    RelPract = (RelPract-min(RelPract))/(max(RelPract)-min(RelPract))
+  )
+Hungary18_final<- Hungary18_final%>% 
+  mutate(
+    score = (score-min(score))/(max(score)-min(score))
+  )
+
+hist(Hungary18_final$score)
+hist(Hungary18_final$RelPract)
+
+#UK 
+UK18_final<- UK18_final%>% 
+  mutate(
+    RelPract = (RelPract-min(RelPract))/(max(RelPract)-min(RelPract))
+  )
+UK18_final<- UK18_final%>% 
+  mutate(
+    score = (score-min(score))/(max(score)-min(score))
+  )
+
+hist(UK18_final$score)
+hist(UK18_final$RelPract)
+
+#NORWAY
+
+Norway18_final<- Norway18_final%>% 
+  mutate(
+    RelPract = (RelPract-min(RelPract))/(max(RelPract)-min(RelPract))
+  )
+Norway18_final<- Norway18_final%>% 
+  mutate(
+    score = (score-min(score))/(max(score)-min(score))
+  )
+
+hist(Norway18_final$score)
+hist(Norway18_final$RelPract)
+
+#SWEDEN
+
+Sweden18_final<- Sweden18_final%>% 
+  mutate(
+    RelPract = (RelPract-min(RelPract))/(max(RelPract)-min(RelPract))
+  )
+Sweden18_final<- Sweden18_final%>% 
+  mutate(
+    score = (score-min(score))/(max(score)-min(score))
+  )
+
+hist(Sweden18_final$score)
+hist(Sweden18_final$RelPract)
+
+
+#  400 entries randomly sampled from data frame (no. of agents in NetLogo simulation = 400) 
+
+Spain18_final <- Spain18_final[sample(nrow(Spain18_final), 400), ]
+write.csv(Spain18_final,"Spain2018.csv")
+
+France18_final <- France18_final[sample(nrow(France18_final), 400), ]
+write.csv(France18_final,"France2018.csv")
+
+Hungary18_final <- Hungary18_final[sample(nrow(Hungary18_final), 400), ]
+write.csv(Hungary18_final,"Hungary2018.csv")
+
+UK18_final <- UK18_final[sample(nrow(UK18_final), 400), ]
+write.csv(UK18_final,"UK2018.csv")
+
+Norway18_final <- Norway18_final[sample(nrow(Norway18_final), 400), ]
+write.csv(Norway18_final,"Norway2018.csv")
+
+Sweden18_final <- Sweden18_final[sample(nrow(Sweden18_final), 400), ]
+write.csv(Sweden18_final,"Sweden2018.csv")
+
+
+
+```
+
+```{r}
+
+#additional pre-processing to check the means of all groups 
+
+
+Spain18_final <- Spain18_final %>%
+  select(SEX:ATTEND_yes_no) %>%
+  mutate(
+    rel_levl = (case_when(
+      score >= 0.6 ~ "H",
+      score < 0.6 & score > 0.25 ~ "M",
+      score < 0.25 ~ "L"
+        )
+  ))
+
+Spain18_final <- Spain18_final %>%
+  select(SEX:rel_levl) %>%
+  mutate(
+    attend_levl = (case_when(
+      RelPract >= 0.5 ~ "yes",
+      RelPract < 0.5 ~ "no"
+    )
+  ))
+
+#creating 6 groups (for whom we calculate mean score) 
+
+Spain18_final <- Spain18_final %>%
+  select(SEX:attend_levl) %>%
+  mutate(
+    Class = (case_when(
+       attend_levl== "no" & rel_levl=="H"~ "H-no",
+       attend_levl== "no" & rel_levl=="M"~ "M-no",
+       attend_levl== "no" & rel_levl=="L"~ "L-no",
+       attend_levl== "yes" & rel_levl=="H"~ "H-yes",
+       attend_levl== "yes" & rel_levl=="M"~ "M-yes",
+       attend_levl== "yes" & rel_levl=="L"~ "L-yes"
+    )
+  ))
+
+
+m1 <- Spain18_final %>% group_by(Class) %>% summarize(mean(score))    # there are no people who are L and yes 
+
+```
+
+
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
